@@ -35,6 +35,7 @@ class GameWindow(arcade.Window):
         self.paddle = None
         self.game_over = False
         self.game_started = False
+        self.score = 0
 
         self.btn_manager = arcade.gui.UIManager()
         self.btn_manager.enable()
@@ -85,6 +86,7 @@ class GameWindow(arcade.Window):
 
         self.game_over = False
         self.game_started = False
+        self.score = 0
 
     def start_game(self):
         self.setup()
@@ -97,6 +99,9 @@ class GameWindow(arcade.Window):
         )
         if self.game_started:
             self.all_sprites.draw()
+            arcade.draw_text(
+                f"Score: {self.score}", 10, self.height - 30, arcade.color.WHITE
+            )
         else:
             self.btn_manager.draw()
 
@@ -143,6 +148,7 @@ class GameWindow(arcade.Window):
             self.ball.change_y *= -1
             for brick in brick_hit_list:
                 brick.remove_from_sprite_lists()
+                self.score += 10
 
     def on_key_press(self, key: int, modifiers: int):
         if key == arcade.key.LEFT:
