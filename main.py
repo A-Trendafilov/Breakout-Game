@@ -1,9 +1,28 @@
 import arcade
+import arcade.gui
+from arcade.gui import UIOnClickEvent
 
 PADDLE_SPEED = 6
 BALL_SPEED = 2
 BTN_WIDTH = 200
-BTN_HEIGHT = 50
+
+
+class QuitBtn(arcade.gui.UIFlatButton):
+    def __init__(self, window, **kwargs):
+        super().__init__(**kwargs)
+        self.window = window
+
+    def on_click(self, event: UIOnClickEvent):
+        arcade.exit()
+
+
+class StartBtn(arcade.gui.UIFlatButton):
+    def __init__(self, window, **kwargs):
+        super().__init__(**kwargs)
+        self.window = window
+
+    def on_click(self, event: UIOnClickEvent):
+        self.window.start_game()
 
 
 class GameWindow(arcade.Window):
@@ -15,7 +34,24 @@ class GameWindow(arcade.Window):
         self.bricks = None
         self.paddle = None
         self.game_over = False
-        self.start_button = None
+        self.game_started = False
+
+        self.btn_manager = arcade.gui.UIManager()
+        self.btn_manager.enable()
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        start_btn = StartBtn(window=self, text="Start Game", width=BTN_WIDTH)
+        self.v_box.add(start_btn)
+        quit_btn = QuitBtn(window=self, text="Quit Game", width=BTN_WIDTH)
+        self.v_box.add(quit_btn)
+
+        self.btn_manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                child=self.v_box,
+            )
+        )
 
         self.setup()
 
@@ -48,32 +84,21 @@ class GameWindow(arcade.Window):
                 self.bricks.append(brick)
 
         self.game_over = False
+        self.game_started = False
 
-    def draw_start_btn(self):
-        if self.game_over:
-            arcade.draw_rectangle_filled(
-                self.width // 2,
-                self.height // 2,
-                BTN_WIDTH,
-                BTN_HEIGHT,
-                arcade.color.AZURE,
-            )
-            arcade.draw_text(
-                "Start New Game",
-                self.width // 2,
-                self.height // 2,
-                arcade.color.BLACK,
-                18,
-                anchor_x="center",
-                anchor_y="center",
-            )
+    def start_game(self):
+        self.setup()
+        self.game_started = True
 
     def on_draw(self):
         arcade.start_render()
         arcade.draw_lrwh_rectangle_textured(
             0, 0, self.width, self.height, self.background
         )
-        self.all_sprites.draw()
+        if self.game_started:
+            self.all_sprites.draw()
+        else:
+            self.btn_manager.draw()
 
         if self.game_over:
             arcade.draw_text(
@@ -84,10 +109,10 @@ class GameWindow(arcade.Window):
                 54,
                 anchor_x="center",
             )
-            self.draw_start_btn()
+            self.btn_manager.draw()
 
     def on_update(self, delta_time: float):
-        if self.game_over:
+        if not self.game_started or self.game_over:
             return
 
         self.all_sprites.update()
@@ -128,15 +153,6 @@ class GameWindow(arcade.Window):
     def on_key_release(self, key: int, modifiers: int):
         if key == arcade.key.LEFT or key == arcade.key.RIGHT:
             self.paddle.change_x = 0
-
-    def on_mouse_press(self, x: float, y: float, btn: int, modifiers: int):
-        if self.game_over:
-            btn_x_start = self.width // 2 - BTN_WIDTH // 2
-            btn_x_end = self.width // 2 + BTN_WIDTH // 2
-            btn_y_start = self.height // 2 - BTN_HEIGHT // 2
-            btn_y_end = self.height // 2 + BTN_HEIGHT // 2
-            if btn_x_start < x < btn_x_end and btn_y_start < y < btn_y_end:
-                self.setup()
 
 
 def main():
