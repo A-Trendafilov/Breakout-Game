@@ -100,7 +100,7 @@ class GameWindow(arcade.Window):
         if self.game_started:
             self.all_sprites.draw()
             arcade.draw_text(
-                f"Score: {self.score}", 10, self.height - 30, arcade.color.WHITE
+                f"Score: {self.score}", 10, self.height - 30, arcade.color.RED
             )
         else:
             self.btn_manager.draw()
